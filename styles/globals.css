@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@500;700;800;900&display=swap");
+
+/* ─────────────────────────────────────────
+   Base
+───────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    direction: rtl;
+  }
+
+  body {
+    @apply font-body text-ink bg-white antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(21, 84, 232, 0.15);
+    color: #0c3dc4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────
+   Components
+───────────────────────────────────────── */
+@layer components {
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-4 py-1.5
+           text-xs font-bold tracking-wide;
+  }
+  .pill-blue {
+    @apply pill bg-blue-3 text-blue border border-blue/10;
+  }
+  .pill-teal {
+    @apply pill bg-teal-2 text-teal border border-teal/10;
+  }
+  .pill-rose {
+    @apply pill bg-rose-2 text-rose border border-rose/10;
+  }
+  .pill-gold {
+    @apply pill bg-gold-2 text-gold border border-gold/10;
+  }
+
+  .btn-primary {
+    @apply w-full flex items-center justify-center gap-2.5
+           bg-gradient-to-br from-blue to-blue-2
+           text-white font-head text-lg font-extrabold
+           rounded-2xl px-6 py-4
+           shadow-cta
+           transition-all duration-300 ease-out
+           hover:-translate-y-0.5 hover:shadow-cta-hover
+           active:scale-[0.98]
+           disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-cta {
+    @apply w-full flex items-center justify-center gap-2.5
+           text-white font-head text-lg font-extrabold
+           rounded-2xl px-6 py-4
+           shadow-cta
+           transition-all duration-300 ease-out
+           hover:-translate-y-1 hover:shadow-cta-hover
+           active:scale-[0.98];
+    background: linear-gradient(135deg, #1554e8 0%, #0c3dc4 40%, #00b5a3 100%);
+  }
+
+  .card {
+    @apply bg-white rounded-2xl border
+           shadow-card transition-all duration-300
+           hover:shadow-card-hover;
+    border-color: rgba(21, 84, 232, 0.08);
+  }
+
+  .sec-title {
+    @apply font-head text-[clamp(1.5rem,4vw,2rem)] font-black leading-tight mb-4;
+  }
+
+  .sec-subtitle {
+    @apply text-sm md:text-base text-ink-3 leading-relaxed max-w-lg mx-auto;
+  }
+}
+
+/* ─────────────────────────────────────────
+   Gradient text
+───────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #1554e8 0%, #00b5a3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────
+   Hero Slider
+───────────────────────────────────────── */
+.slider-container {
+  @apply relative w-full overflow-hidden rounded-3xl;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, #f8faff 0%, #e8effe 100%);
+}
+
+@media (min-width: 768px) {
+  .slider-container {
+    aspect-ratio: 4 / 3;
+    max-width: 520px;
+  }
+}
+
+.slider-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  height: 100%;
+  will-change: transform;
+}
+
+.slider-track.dragging {
+  transition: none;
+}
+
+.slider-slide {
+  min-width: 100%;
+  position: relative;
+  height: 100%;
+}
+
+.slider-dot {
+  @apply w-2 h-2 rounded-full transition-all duration-300 cursor-pointer;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+}
+.slider-dot.active {
+  @apply w-7;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ─────────────────────────────────────────
+   Icon container
+───────────────────────────────────────── */
+.icon-box {
+  @apply w-11 h-11 flex-shrink-0 rounded-xl
+         flex items-center justify-center
+         transition-colors duration-200;
+}
+.icon-box-blue {
+  @apply icon-box bg-blue-3 text-blue;
+}
+.icon-box-teal {
+  @apply icon-box bg-teal-2 text-teal;
+}
+.icon-box-rose {
+  @apply icon-box bg-rose-2 text-rose;
+}
+.icon-box-gold {
+  @apply icon-box bg-gold-2 text-gold;
+}
+
+/* Spinner */
+.spinner {
+  @apply inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─────────────────────────────────────────
+   Section backgrounds (subtle patterns)
+───────────────────────────────────────── */
+.section-light {
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+}
+.section-alt {
+  background: linear-gradient(180deg, #f8faff 0%, #f0fdf9 100%);
+}
+.section-dark {
+  background: linear-gradient(135deg, #0b1628 0%, #0c3dc4 100%);
+}

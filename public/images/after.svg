@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#E0FAF8"/>
+  <circle cx="200" cy="170" r="60" fill="#00B5A3" opacity="0.2"/>
+  <text x="200" y="180" text-anchor="middle" font-family="sans-serif" font-size="48">💪</text>
+  <text x="200" y="280" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#00B5A3" font-weight="bold">بعد</text>
+  <text x="200" y="320" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#6B7A94">صورة بعد الاستخدام</text>
+</svg>
