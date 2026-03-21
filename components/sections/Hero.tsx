@@ -65,7 +65,7 @@ export default function Hero() {
 
   return (
     <section
-      className="section-light pt-6 pb-10 md:pt-10 md:pb-16 px-5"
+      className="section-hero pt-8 pb-12 md:pt-12 md:pb-20 px-5"
       aria-label="القسم الرئيسي"
     >
       <div className="max-w-5xl mx-auto">
@@ -155,24 +155,29 @@ export default function Hero() {
           <div className="w-full lg:w-[45%] text-center lg:text-right">
             {/* Badge */}
             <div
-              className="inline-flex items-center gap-2 bg-blue-3 border border-blue/10
-                            text-blue rounded-full px-4 py-2 text-sm font-bold mb-5"
+              className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-extrabold mb-6"
+              style={{
+                background: "linear-gradient(135deg, #e8effe, #dbeafe)",
+                border: "1px solid rgba(21,84,232,0.15)",
+              }}
             >
-              <Package className="w-4 h-4" />
-              {siteConfig.ordersCount} طلب في المغرب
+              <Package className="w-4 h-4 text-blue" />
+              <span className="text-blue">
+                +{siteConfig.ordersCount} مغربي طلبو هاد المنتج
+              </span>
             </div>
 
             {/* H1 */}
-            <h1 className="font-head text-[clamp(30px,7vw,48px)] font-black leading-[1.2] mb-4">
-              {siteConfig.tagline}
+            <h1 className="font-head text-[clamp(28px,7vw,50px)] font-black leading-[1.15] mb-5">
+              <span className="text-gradient">أخفِ بطنك فوراً</span>
               <br />
-              <span className="text-gradient">بدون رياضة ولا ريجيم</span>
+              <span className="text-ink">بدون رياضة ولا ريجيم</span>
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-base md:text-lg text-ink-2 leading-relaxed max-w-md mx-auto lg:mx-0 mb-6">
-              {siteConfig.productNameAr} يخفي الكرش من اللحظة الأولى — مظهر أنحف
-              تحت الملابس، توصيل مجاني لجميع مدن المغرب
+            <p className="text-base md:text-lg text-ink-3 leading-[1.8] max-w-md mx-auto lg:mx-0 mb-7">
+              البس {siteConfig.productNameAr} تحت الملابس وشوف الفرق من أول
+              لحظة. مظهر أنحف وأنظف — والتوصيل مجاني لجميع مدن المغرب.
             </p>
 
             {/* Price row */}

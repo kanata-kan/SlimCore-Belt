@@ -6,15 +6,15 @@ export default function BeforeAfter() {
   const { before, after } = siteConfig.beforeAfter;
 
   return (
-    <section className="section-light pattern-arches py-16 px-5">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="pill-gold mb-3">
+    <section className="section-alt py-20 px-5">
+      <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="pill-gold mb-4">
             <ArrowLeftRight className="w-3.5 h-3.5" />
             الفرق واضح
           </div>
-          <h2 className="sec-title">قبل و بعد الاستخدام</h2>
-          <p className="sec-subtitle">شوف الفرق بنفسك</p>
+          <h2 className="sec-title">شوف الفرق بعينيك — قبل وبعد</h2>
+          <p className="sec-subtitle">نتائج حقيقية من أول استعمال</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

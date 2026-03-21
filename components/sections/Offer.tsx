@@ -3,15 +3,17 @@ import { Tag, Truck, Star, Crown } from "lucide-react";
 
 export default function Offer() {
   return (
-    <section className="section-alt pattern-hex py-16 px-5">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="pill-teal mb-3">
+    <section className="section-offer py-20 px-5">
+      <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="pill-teal mb-4">
             <Tag className="w-3.5 h-3.5" />
-            العروض
+            عروض حصرية
           </div>
-          <h2 className="sec-title">اختار العرض المناسب ليك</h2>
-          <p className="sec-subtitle">كلما زدتي الكمية، كلما ربحتي أكثر</p>
+          <h2 className="sec-title">اختار العرض اللي يناسبك</h2>
+          <p className="sec-subtitle">
+            كلما زدتي الكمية، كلما وفّرتي أكثر — توصيل مجاني لكل العروض
+          </p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 max-w-xl md:max-w-none mx-auto">
