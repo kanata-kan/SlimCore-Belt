@@ -17,6 +17,8 @@ export default function Hero() {
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const startX = useRef(0);
+  const startY = useRef(0);
+  const dirLocked = useRef<"h" | "v" | null>(null);
   const slides = siteConfig.heroSlides;
   const total = slides.length;
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
@@ -39,19 +41,37 @@ export default function Hero() {
     };
   }, [resetAuto]);
 
-  // Touch / pointer handlers for swipe
+  // Touch / pointer handlers — only swipe horizontally, allow vertical scroll
   const onPointerDown = (e: React.PointerEvent) => {
-    setDragging(true);
     startX.current = e.clientX;
+    startY.current = e.clientY;
+    dirLocked.current = null;
     setDragOffset(0);
   };
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging) return;
-    setDragOffset(e.clientX - startX.current);
+    const dx = e.clientX - startX.current;
+    const dy = e.clientY - startY.current;
+
+    // Lock direction after 8px of movement
+    if (!dirLocked.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      dirLocked.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+    }
+
+    // Vertical scroll → do nothing, let browser handle it
+    if (dirLocked.current !== "h") return;
+
+    // Horizontal swipe → engage slider drag
+    e.preventDefault();
+    if (!dragging) setDragging(true);
+    setDragOffset(dx);
   };
   const onPointerUp = () => {
-    if (!dragging) return;
+    if (!dragging) {
+      dirLocked.current = null;
+      return;
+    }
     setDragging(false);
+    dirLocked.current = null;
     // RTL: positive drag = next, negative = prev
     if (Math.abs(dragOffset) > 60) {
       goTo(dragOffset > 0 ? current + 1 : current - 1);

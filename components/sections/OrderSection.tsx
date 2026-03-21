@@ -10,21 +10,30 @@ type FormState = "idle" | "loading" | "success" | "error";
 const MOROCCAN_PHONE = /^(\+212|00212|0)[5-7][0-9]{8}$/;
 
 function buildWhatsAppUrl(form: OrderFormData, total: number): string {
+  const line = "━━━━━━━━━━━━━━━━━━━━";
   const msg = encodeURIComponent(
-    `طلب جديد 🛒
+    `🛒 *طلب جديد — ${siteConfig.productName}*
+${line}
 
-👤 الاسم: ${form.name}
-📞 الهاتف: ${form.phone}
-📍 المدينة: ${form.city}
-🏠 العنوان: ${form.address}
+*معلومات الزبون:*
+▸ الاسم: *${form.name}*
+▸ الهاتف: *${form.phone}*
+▸ المدينة: *${form.city}*
+▸ العنوان: ${form.address}
 
-📏 المقاس: ${form.size}
-📦 الكمية: ${form.quantity}
-💵 المبلغ: ${total} ${siteConfig.currencyAr}
+${line}
+*تفاصيل الطلب:*
+▸ المنتج: ${siteConfig.productNameAr}
+▸ المقاس: *${form.size}*
+▸ الكمية: *${form.quantity}*
+▸ المبلغ: *${total} ${siteConfig.currencyAr}*
 
-🚚 ${siteConfig.payment}
+${line}
+🚚 التوصيل: *مجاني* لجميع المدن
+💰 الدفع: *عند الاستلام*
+${line}
 
-المرجو تأكيد الطلب 📞`,
+✅ *المرجو تأكيد الطلب*`,
   );
   return `https://wa.me/${siteConfig.whatsappNumber}?text=${msg}`;
 }

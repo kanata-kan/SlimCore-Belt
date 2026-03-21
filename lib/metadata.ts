@@ -35,7 +35,7 @@ export const landingMetadata: Metadata = {
     description,
     images: [
       {
-        url: `${SITE_URL}/opengraph-image`,
+        url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
@@ -48,7 +48,7 @@ export const landingMetadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
     description,
-    images: [`${SITE_URL}/opengraph-image`],
+    images: [`${SITE_URL}/og-image.png`],
   },
 
   robots: {
@@ -63,7 +63,7 @@ export const productJsonLd = {
   name: siteConfig.productName,
   description: "حزام لإخفاء البطن فوراً وتحسين شكل الجسم تحت الملابس",
   brand: { "@type": "Brand", name: siteConfig.productName },
-  image: `${SITE_URL}/opengraph-image`,
+  image: `${SITE_URL}/og-image.png`,
   offers: {
     "@type": "AggregateOffer",
     lowPrice: String(siteConfig.offers.one.total),
