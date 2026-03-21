@@ -5,7 +5,7 @@ const GUARANTEE_ICONS = [Truck, BadgeCheck, Package, Shield];
 
 export default function Trust() {
   return (
-    <section className="section-light py-16 px-5">
+    <section className="section-light pattern-zellige py-16 px-5">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10">
           <div className="pill-teal mb-3">

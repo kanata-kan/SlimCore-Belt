@@ -5,7 +5,7 @@
 
 export const siteConfig = {
   // ── WhatsApp ──
-  whatsappNumber: "212XXXXXXXXX",
+  whatsappNumber: "212716553578",
 
   // ── Product ──
   productName: "SlimCore Belt",
@@ -20,15 +20,15 @@ export const siteConfig = {
     one: { qty: 1, price: 199, total: 199, label: "1 حزام", badge: "" },
     two: {
       qty: 2,
-      price: 150,
-      total: 299,
+      price: 175,
+      total: 349,
       label: "2 أحزمة",
       badge: "الأكثر طلباً",
     },
     three: {
       qty: 3,
-      price: 133,
-      total: 399,
+      price: 150,
+      total: 449,
       label: "3 أحزمة",
       badge: "أفضل قيمة",
     },

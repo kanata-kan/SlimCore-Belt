@@ -13,6 +13,7 @@ import OrderForm from "@/components/sections/OrderSection";
 import Trust from "@/components/sections/Guarantees";
 import CTA from "@/components/sections/CTA";
 import StickyCTA from "@/components/ui/StickyCTA";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 export const metadata: Metadata = landingMetadata;
 
@@ -32,29 +33,50 @@ export default function LandingPage() {
       {/* 2. Hero (with slider) */}
       <Hero />
 
+      {/* ── Moroccan divider ── */}
+      <div className="divider-moroccan" aria-hidden="true" />
+
       {/* 3. Problem */}
-      <Problem />
+      <ScrollReveal>
+        <Problem />
+      </ScrollReveal>
 
       {/* 4. Benefits */}
-      <Benefits />
+      <ScrollReveal delay={80}>
+        <Benefits />
+      </ScrollReveal>
+
+      {/* ── Moroccan divider ── */}
+      <div className="divider-moroccan" aria-hidden="true" />
 
       {/* 5. Before / After */}
-      <BeforeAfter />
+      <ScrollReveal>
+        <BeforeAfter />
+      </ScrollReveal>
 
       {/* 6. Offer (pricing) */}
-      <Offer />
+      <ScrollReveal delay={80}>
+        <Offer />
+      </ScrollReveal>
 
       {/* 7. Order Form */}
-      <OrderForm />
+      <ScrollReveal>
+        <OrderForm />
+      </ScrollReveal>
+
+      {/* ── Moroccan divider ── */}
+      <div className="divider-moroccan" aria-hidden="true" />
 
       {/* 8. Trust */}
-      <Trust />
+      <ScrollReveal>
+        <Trust />
+      </ScrollReveal>
 
       {/* 9. Final CTA */}
       <CTA />
 
       {/* Footer */}
-      <footer className="bg-ink py-10 px-5 pb-24 lg:pb-10">
+      <footer className="bg-ink pattern-hex py-10 px-5 pb-24 lg:pb-10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="font-head text-lg font-bold text-white/90 mb-2">
             {siteConfig.productName}

@@ -6,7 +6,7 @@ export default function BeforeAfter() {
   const { before, after } = siteConfig.beforeAfter;
 
   return (
-    <section className="section-light py-16 px-5">
+    <section className="section-light pattern-arches py-16 px-5">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10">
           <div className="pill-gold mb-3">

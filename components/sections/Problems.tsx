@@ -3,7 +3,7 @@ import { AlertTriangle, X } from "lucide-react";
 
 export default function Problem() {
   return (
-    <section className="section-alt py-16 px-5">
+    <section className="section-alt pattern-zellige py-16 px-5">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <div className="pill-rose mb-3">

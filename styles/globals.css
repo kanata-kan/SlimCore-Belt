@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@500;700;800;900&display=swap");
-
 /* ─────────────────────────────────────────
    Base
 ───────────────────────────────────────── */
@@ -180,7 +178,58 @@
 }
 
 /* ─────────────────────────────────────────
-   Section backgrounds (subtle patterns)
+   Scroll reveal animation
+───────────────────────────────────────── */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────
+   Moroccan zellige SVG patterns (inline)
+───────────────────────────────────────── */
+
+/* 8-pointed star — classic zellige motif */
+.pattern-zellige {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L35 15 L45 15 L37 22 L40 32 L30 26 L20 32 L23 22 L15 15 L25 15Z' fill='none' stroke='%231554E8' stroke-width='0.5' opacity='0.06'/%3E%3Cpath d='M0 35 L5 45 L15 45 L7 52 L10 60 L0 55' fill='none' stroke='%231554E8' stroke-width='0.5' opacity='0.06'/%3E%3Cpath d='M60 35 L55 45 L45 45 L53 52 L50 60 L60 55' fill='none' stroke='%231554E8' stroke-width='0.5' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* Diamond grid — geometric Islamic pattern */
+.pattern-diamond {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 L40 20 L20 40 L0 20Z' fill='none' stroke='%2300B5A3' stroke-width='0.4' opacity='0.05'/%3E%3Cpath d='M20 10 L30 20 L20 30 L10 20Z' fill='none' stroke='%2300B5A3' stroke-width='0.3' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 40px 40px;
+}
+
+/* Interlocking arches — Moorish arch pattern */
+.pattern-arches {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40 Q20 0 40 40' fill='none' stroke='%231554E8' stroke-width='0.5' opacity='0.05'/%3E%3Cpath d='M40 40 Q60 0 80 40' fill='none' stroke='%231554E8' stroke-width='0.5' opacity='0.05'/%3E%3Cpath d='M20 40 Q40 10 60 40' fill='none' stroke='%2300B5A3' stroke-width='0.3' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 80px 40px;
+}
+
+/* Hexagonal tessellation */
+.pattern-hex {
+  background-image: url("data:image/svg+xml,%3Csvg width='56' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 0 L42 0 L56 24 L42 48 L14 48 L0 24Z' fill='none' stroke='%230C3DC4' stroke-width='0.4' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 56px 48px;
+}
+
+/* ─────────────────────────────────────────
+   Section backgrounds with patterns
 ───────────────────────────────────────── */
 .section-light {
   background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
@@ -190,4 +239,15 @@
 }
 .section-dark {
   background: linear-gradient(135deg, #0b1628 0%, #0c3dc4 100%);
+}
+
+/* ─────────────────────────────────────────
+   Moroccan section divider (arabesque)
+───────────────────────────────────────── */
+.divider-moroccan {
+  height: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 16 Q15 2 30 16 Q45 30 60 16 Q75 2 90 16 Q105 30 120 16' fill='none' stroke='%231554E8' stroke-width='1' opacity='0.1'/%3E%3Cpath d='M0 16 Q15 30 30 16 Q45 2 60 16 Q75 30 90 16 Q105 2 120 16' fill='none' stroke='%2300B5A3' stroke-width='1' opacity='0.08'/%3E%3C/svg%3E");
+  background-size: 120px 32px;
+  background-repeat: repeat-x;
+  background-position: center;
 }
