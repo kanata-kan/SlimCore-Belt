@@ -91,6 +91,7 @@ export default function Hero() {
                       fill
                       className="object-cover pointer-events-none"
                       sizes="(max-width: 768px) 100vw, 520px"
+                      quality={85}
                       loading={i === 0 ? "eager" : "lazy"}
                       draggable={false}
                     />

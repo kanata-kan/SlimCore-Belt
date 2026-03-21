@@ -27,6 +27,7 @@ export default function BeforeAfter() {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                quality={85}
               />
               <div
                 className="absolute top-3 right-3 bg-rose text-white text-xs font-bold
@@ -68,6 +69,7 @@ export default function BeforeAfter() {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                quality={85}
               />
               <div
                 className="absolute top-3 right-3 bg-teal text-white text-xs font-bold

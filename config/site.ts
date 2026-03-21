@@ -128,15 +128,15 @@ export const siteConfig = {
   // ── Hero slides ──
   heroSlides: [
     {
-      image: "/images/slide-1.svg",
+      image: "/images/slide-1.png",
       alt: "حزام SlimCore — إخفاء فوري للبطن",
     },
     {
-      image: "/images/slide-2.svg",
+      image: "/images/slide-2.png",
       alt: "حزام SlimCore — مظهر أنحف تحت الملابس",
     },
     {
-      image: "/images/slide-3.svg",
+      image: "/images/slide-3.png",
       alt: "حزام SlimCore — شكل متناسق وجذاب",
     },
   ],
@@ -150,12 +150,12 @@ export const siteConfig = {
         "الملابس ما كتجيش مزيان",
         "ثقة قليلة في النفس",
       ],
-      image: "/images/before.svg",
+      image: "/images/before.png",
     },
     after: {
       title: "بعد ✅",
       points: ["بطن مسطح فوراً", "شكل أنحف تحت الملابس", "ثقة أكبر في النفس"],
-      image: "/images/after.svg",
+      image: "/images/after.png",
     },
   },
 
