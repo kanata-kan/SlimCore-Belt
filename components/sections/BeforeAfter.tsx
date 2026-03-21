@@ -20,7 +20,7 @@ export default function BeforeAfter() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* BEFORE */}
           <div className="card overflow-hidden border-rose/15 hover:border-rose/30">
-            <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-rose-2 to-rose-3">
+            <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-rose-2 to-rose-3">
               <Image
                 src={before.image}
                 alt="قبل استخدام الحزام"
@@ -62,7 +62,7 @@ export default function BeforeAfter() {
             className="card overflow-hidden border-2 border-teal/20 hover:border-teal/40
                           shadow-[0_4px_24px_rgba(0,181,163,0.08)]"
           >
-            <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-teal-2 to-teal-3">
+            <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-teal-2 to-teal-3">
               <Image
                 src={after.image}
                 alt="بعد استخدام الحزام"
