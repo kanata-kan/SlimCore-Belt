@@ -128,16 +128,28 @@ export const siteConfig = {
   // ── Hero slides ──
   heroSlides: [
     {
-      image: "/images/slide-1.png",
+      image: "/images/slide-1.webp",
       alt: "حزام SlimCore — إخفاء فوري للبطن",
+      caption: "إخفاء فوري للبطن",
+      sub: "نتيجة واضحة من أول لبسة",
     },
     {
-      image: "/images/slide-2.png",
+      image: "/images/slide-2.webp",
       alt: "حزام SlimCore — مظهر أنحف تحت الملابس",
+      caption: "رقيق وغير مرئي",
+      sub: "يختفي تحت أي لباس",
     },
     {
-      image: "/images/slide-3.png",
+      image: "/images/slide-3.webp",
       alt: "حزام SlimCore — شكل متناسق وجذاب",
+      caption: "شكل متناسق وجذاب",
+      sub: "ثقة أكبر في كل مناسبة",
+    },
+    {
+      image: "/images/slide-4.webp",
+      alt: "حزام SlimCore — مريح طول اليوم",
+      caption: "مريح طول اليوم",
+      sub: "قماش خفيف قابل للتنفس",
     },
   ],
 
@@ -150,12 +162,12 @@ export const siteConfig = {
         "الملابس ما كتجيش مزيان",
         "ثقة قليلة في النفس",
       ],
-      image: "/images/before.png",
+      image: "/images/before.webp",
     },
     after: {
       title: "بعد ✅",
       points: ["بطن مسطح فوراً", "شكل أنحف تحت الملابس", "ثقة أكبر في النفس"],
-      image: "/images/after.png",
+      image: "/images/after.webp",
     },
   },
 

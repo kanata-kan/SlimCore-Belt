@@ -13,25 +13,32 @@ import {
 } from "lucide-react";
 
 export default function Hero() {
-  const [current, setCurrent] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const startX = useRef(0);
-  const startY = useRef(0);
-  const dirLocked = useRef<"h" | "v" | null>(null);
   const slides = siteConfig.heroSlides;
   const total = slides.length;
+  const [current, setCurrent] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const isUserScrolling = useRef(false);
 
+  // Scroll to a specific slide
   const goTo = useCallback(
-    (idx: number) => setCurrent(((idx % total) + total) % total),
+    (idx: number) => {
+      const wrapped = ((idx % total) + total) % total;
+      setCurrent(wrapped);
+      const el = scrollRef.current;
+      if (!el) return;
+      const slideW = el.offsetWidth;
+      el.scrollTo({ left: slideW * wrapped, behavior: "smooth" });
+    },
     [total],
   );
 
-  // Auto-advance
+  // Auto-advance every 5s
   const resetAuto = useCallback(() => {
     if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => goTo(current + 1), 5000);
+    autoRef.current = setInterval(() => {
+      if (!isUserScrolling.current) goTo(current + 1);
+    }, 5000);
   }, [current, goTo]);
 
   useEffect(() => {
@@ -41,80 +48,67 @@ export default function Hero() {
     };
   }, [resetAuto]);
 
-  // Touch / pointer handlers — only swipe horizontally, allow vertical scroll
-  const onPointerDown = (e: React.PointerEvent) => {
-    startX.current = e.clientX;
-    startY.current = e.clientY;
-    dirLocked.current = null;
-    setDragOffset(0);
+  // Detect which slide is visible via native scroll
+  const onScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const slideW = el.offsetWidth;
+    if (slideW === 0) return;
+    const idx = Math.round(el.scrollLeft / slideW);
+    if (idx !== current && idx >= 0 && idx < total) {
+      setCurrent(idx);
+    }
+  }, [current, total]);
+
+  // Pause auto-advance while user is touching
+  const onTouchStart = () => {
+    isUserScrolling.current = true;
+    if (autoRef.current) clearInterval(autoRef.current);
   };
-  const onPointerMove = (e: React.PointerEvent) => {
-    const dx = e.clientX - startX.current;
-    const dy = e.clientY - startY.current;
-
-    // Lock direction after 8px of movement
-    if (!dirLocked.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-      dirLocked.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
-    }
-
-    // Vertical scroll → do nothing, let browser handle it
-    if (dirLocked.current !== "h") return;
-
-    // Horizontal swipe → engage slider drag
-    e.preventDefault();
-    if (!dragging) setDragging(true);
-    setDragOffset(dx);
-  };
-  const onPointerUp = () => {
-    if (!dragging) {
-      dirLocked.current = null;
-      return;
-    }
-    setDragging(false);
-    dirLocked.current = null;
-    // RTL: positive drag = next, negative = prev
-    if (Math.abs(dragOffset) > 60) {
-      goTo(dragOffset > 0 ? current + 1 : current - 1);
-    }
-    setDragOffset(0);
+  const onTouchEnd = () => {
+    isUserScrolling.current = false;
     resetAuto();
   };
 
-  // For RTL: slides go right-to-left, so translateX is positive
-  const translateX = current * 100 + (dragging ? -dragOffset / 4 : 0);
-
   return (
     <section
-      className="section-hero pt-8 pb-12 md:pt-12 md:pb-20 px-5"
+      className="section-hero pt-6 pb-10 md:pt-12 md:pb-20 px-4 md:px-5"
       aria-label="القسم الرئيسي"
     >
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col lg:flex-row-reverse lg:items-center lg:gap-12">
-          {/* ── Slider ── */}
+          {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
-            <div
-              className="slider-container shadow-glow mx-auto select-none touch-pan-y"
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerLeave={onPointerUp}
-            >
+            <div className="hero-gallery mx-auto">
+              {/* Scroll-snap container — native touch, zero JS conflicts */}
               <div
-                className={`slider-track ${dragging ? "dragging" : ""}`}
-                style={{ transform: `translateX(${translateX}%)` }}
+                ref={scrollRef}
+                className="hero-scroll"
+                onScroll={onScroll}
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
               >
                 {slides.map((slide, i) => (
-                  <div key={i} className="slider-slide">
+                  <div key={i} className="hero-slide">
                     <Image
                       src={slide.image}
                       alt={slide.alt}
                       fill
-                      className="object-cover pointer-events-none"
-                      sizes="(max-width: 768px) 100vw, 520px"
+                      className="object-cover"
+                      sizes="(max-width: 768px) 92vw, 420px"
                       quality={85}
                       loading={i === 0 ? "eager" : "lazy"}
                       draggable={false}
                     />
+                    {/* Caption overlay */}
+                    <div className="hero-caption">
+                      <span className="font-head text-sm md:text-base font-bold">
+                        {slide.caption}
+                      </span>
+                      <span className="text-white/70 text-xs md:text-sm">
+                        {slide.sub}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -122,33 +116,27 @@ export default function Hero() {
               {/* Nav arrows (desktop) */}
               <button
                 onClick={() => {
-                  goTo(current + 1);
-                  resetAuto();
-                }}
-                className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-10
-                           w-10 h-10 items-center justify-center rounded-full
-                           bg-white/80 backdrop-blur-sm shadow-md
-                           hover:bg-white transition-colors"
-                aria-label="الصورة التالية"
-              >
-                <ChevronLeft className="w-5 h-5 text-ink" />
-              </button>
-              <button
-                onClick={() => {
                   goTo(current - 1);
                   resetAuto();
                 }}
-                className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-10
-                           w-10 h-10 items-center justify-center rounded-full
-                           bg-white/80 backdrop-blur-sm shadow-md
-                           hover:bg-white transition-colors"
+                className="hero-arrow hero-arrow-left"
                 aria-label="الصورة السابقة"
               >
-                <ChevronRight className="w-5 h-5 text-ink" />
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => {
+                  goTo(current + 1);
+                  resetAuto();
+                }}
+                className="hero-arrow hero-arrow-right"
+                aria-label="الصورة التالية"
+              >
+                <ChevronRight className="w-5 h-5" />
               </button>
 
-              {/* Dots */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+              {/* Progress dots */}
+              <div className="hero-dots">
                 {slides.map((_, i) => (
                   <button
                     key={i}
@@ -156,17 +144,14 @@ export default function Hero() {
                       goTo(i);
                       resetAuto();
                     }}
-                    className={`slider-dot ${i === current ? "active" : ""}`}
+                    className={`hero-dot ${i === current ? "active" : ""}`}
                     aria-label={`صورة ${i + 1}`}
                   />
                 ))}
               </div>
 
-              {/* Slide counter badge */}
-              <div
-                className="absolute top-4 right-4 z-10 bg-black/30 backdrop-blur-sm
-                              text-white text-xs font-bold px-3 py-1.5 rounded-full"
-              >
+              {/* Counter badge */}
+              <div className="hero-counter">
                 {current + 1} / {total}
               </div>
             </div>
