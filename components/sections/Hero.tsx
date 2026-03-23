@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { siteConfig, PRICING_LIST } from "@/config/site";
 import {
   ShoppingCart,
@@ -16,12 +15,6 @@ export default function Hero() {
   const slides = siteConfig.heroSlides;
   const total = slides.length;
   const [current, setCurrent] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const dragOffset = useRef(0);
-  const startX = useRef(0);
-  const startY = useRef(0);
-  const dirLocked = useRef<"h" | "v" | null>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const goTo = useCallback(
@@ -29,10 +22,10 @@ export default function Hero() {
     [total],
   );
 
-  // Auto-advance
+  // Auto-advance every 4s
   const resetAuto = useCallback(() => {
     if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => goTo(current + 1), 5000);
+    autoRef.current = setInterval(() => goTo(current + 1), 4000);
   }, [current, goTo]);
 
   useEffect(() => {
@@ -41,64 +34,6 @@ export default function Hero() {
       if (autoRef.current) clearInterval(autoRef.current);
     };
   }, [resetAuto]);
-
-  // Native touch listeners with { passive: false } to allow preventDefault
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-
-    let cw = 1;
-
-    const onStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      startX.current = t.clientX;
-      startY.current = t.clientY;
-      dirLocked.current = null;
-      dragOffset.current = 0;
-      cw = el.offsetWidth || 1;
-      if (autoRef.current) clearInterval(autoRef.current);
-    };
-
-    const onMove = (e: TouchEvent) => {
-      const t = e.touches[0];
-      const dx = t.clientX - startX.current;
-      const dy = t.clientY - startY.current;
-
-      if (!dirLocked.current && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-        dirLocked.current = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
-      }
-      if (dirLocked.current !== "h") return;
-
-      e.preventDefault();
-      dragOffset.current = dx;
-      setDragging(true);
-      el.style.transform = `translateX(calc(${current * -100}% + ${dx}px))`;
-    };
-
-    const onEnd = () => {
-      if (dirLocked.current === "h") {
-        const threshold = cw * 0.2;
-        if (Math.abs(dragOffset.current) > threshold) {
-          goTo(dragOffset.current > 0 ? current - 1 : current + 1);
-        }
-      }
-      dragOffset.current = 0;
-      dirLocked.current = null;
-      setDragging(false);
-      el.style.transform = "";
-      resetAuto();
-    };
-
-    el.addEventListener("touchstart", onStart, { passive: true });
-    el.addEventListener("touchmove", onMove, { passive: false });
-    el.addEventListener("touchend", onEnd, { passive: true });
-
-    return () => {
-      el.removeEventListener("touchstart", onStart);
-      el.removeEventListener("touchmove", onMove);
-      el.removeEventListener("touchend", onEnd);
-    };
-  }, [current, goTo, resetAuto]);
 
   return (
     <section
@@ -110,34 +45,21 @@ export default function Hero() {
           {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
-              <div
-                ref={trackRef}
-                className={`hero-track ${dragging ? "dragging" : ""}`}
-                style={
-                  !dragging
-                    ? { transform: `translateX(${current * -100}%)` }
-                    : undefined
-                }
-              >
+              {/* Fade slider — one image at a time, no translateX */}
+              <div className="hero-fade-container">
                 {slides.map((slide, i) => (
-                  <div key={i} className="hero-slide">
-                    <Image
-                      src={slide.image}
-                      alt={slide.alt}
-                      width={640}
-                      height={960}
-                      className="hero-slide-img"
-                      sizes="(max-width: 768px) 92vw, 420px"
-                      quality={85}
-                      priority={i === 0}
-                      loading={i === 0 ? undefined : "eager"}
-                      draggable={false}
-                    />
-                  </div>
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={i}
+                    src={slide.image}
+                    alt={slide.alt}
+                    className={`hero-fade-img ${i === current ? "active" : ""}`}
+                    draggable={false}
+                  />
                 ))}
               </div>
 
-              {/* ── Overlays (outside track, always visible) ── */}
+              {/* ── Overlays ── */}
               <div className="hero-overlay-top">
                 <div className="hero-brand-badge">
                   <span className="hero-brand-dot" />
@@ -156,7 +78,7 @@ export default function Hero() {
                 <div className="hero-caption-line" />
               </div>
 
-              {/* Nav arrows (desktop) */}
+              {/* Nav arrows */}
               <button
                 onClick={() => {
                   goTo(current - 1);
@@ -178,7 +100,7 @@ export default function Hero() {
                 <ChevronRight className="w-5 h-5" />
               </button>
 
-              {/* Progress dots */}
+              {/* Dots */}
               <div className="hero-dots">
                 {slides.map((_, i) => (
                   <button
