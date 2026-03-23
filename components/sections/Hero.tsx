@@ -11,113 +11,250 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-/* ─── Swipe threshold (px) ─── */
-const SWIPE_THRESHOLD = 50;
+/* ═══════════════════════════════════════════════════════════════
+   Constants — tweak these to fine-tune feel
+   ═══════════════════════════════════════════════════════════════ */
+const SWIPE_THRESHOLD = 40; // px – minimum distance to trigger slide change
+const VELOCITY_TRIGGER = 0.3; // px/ms – fast flick triggers even below threshold
+const EDGE_RESISTANCE = 0.3; // 0-1 – rubber-band damping at first/last slide
+const LOCK_DELTA = 8; // px – movement before direction is locked
+const AUTO_INTERVAL = 4000; // ms – desktop auto-advance interval
+const SNAP_DURATION = "0.32s"; // CSS transition for snap animation
+
+/* ═══════════════════════════════════════════════════════════════
+   Touch state — lives entirely in refs for zero re-renders
+   during drag. Only `currentIndex` is React state.
+   ═══════════════════════════════════════════════════════════════ */
+interface TouchState {
+  startX: number;
+  startY: number;
+  deltaX: number;
+  startTime: number;
+  direction: "h" | "v" | null; // locked after first significant move
+  active: boolean; // true once horizontal lock confirmed
+  width: number; // cached container width
+}
+
+const initialTouch: TouchState = {
+  startX: 0,
+  startY: 0,
+  deltaX: 0,
+  startTime: 0,
+  direction: null,
+  active: false,
+  width: 1,
+};
 
 export default function Hero() {
   const slides = siteConfig.heroSlides;
   const total = slides.length;
+  const last = total - 1;
 
   /* ━━━ Single source of truth ━━━ */
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [swipeDelta, setSwipeDelta] = useState(0);
 
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const swiping = useRef(false);
+  /* ━━━ Refs (never cause re-renders) ━━━ */
   const trackRef = useRef<HTMLDivElement>(null);
+  const touchRef = useRef<TouchState>({ ...initialTouch });
+  const indexRef = useRef<number>(0); // mirrors currentIndex without stale closures
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const widthRef = useRef<number>(1); // container width, updated on mount + resize
 
-  /* ━━━ Navigation (clamped, never wraps) ━━━ */
+  /* Keep indexRef in sync */
+  useEffect(() => {
+    indexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  /* ━━━ Container width — measured once on mount + resize ━━━ */
+  useEffect(() => {
+    const measure = () => {
+      const el = trackRef.current?.parentElement;
+      if (el) widthRef.current = el.offsetWidth || 1;
+    };
+    measure();
+    window.addEventListener("resize", measure, { passive: true });
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
+  /* ━━━ Navigation (clamped 0…last) ━━━ */
   const goTo = useCallback(
     (idx: number) => {
-      const clamped = Math.max(0, Math.min(idx, total - 1));
+      const clamped = Math.max(0, Math.min(idx, last));
+      indexRef.current = clamped;
       setCurrentIndex(clamped);
+      /* Snap animation: let CSS transition handle it */
+      const track = trackRef.current;
+      if (track) {
+        track.style.transition = `transform ${SNAP_DURATION} cubic-bezier(.25,.46,.45,.94)`;
+        track.style.transform = `translateX(${clamped * -100}%)`;
+      }
     },
-    [total],
+    [last],
   );
 
-  /* ━━━ Auto-advance (desktop: ≥768px) ━━━ */
-  const startAuto = useCallback(() => {
-    if (autoRef.current) clearInterval(autoRef.current);
-    if (window.innerWidth < 768) return;
-    autoRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev < total - 1 ? prev + 1 : 0));
-    }, 4000);
-  }, [total]);
-
+  /* ━━━ Auto-advance (desktop ≥ 768px only) ━━━ */
   const stopAuto = useCallback(() => {
-    if (autoRef.current) { clearInterval(autoRef.current); autoRef.current = undefined; }
+    if (autoRef.current) {
+      clearInterval(autoRef.current);
+      autoRef.current = undefined;
+    }
   }, []);
+
+  const startAuto = useCallback(() => {
+    stopAuto();
+    if (typeof window === "undefined" || window.innerWidth < 768) return;
+    autoRef.current = setInterval(() => {
+      const next = indexRef.current < last ? indexRef.current + 1 : 0;
+      goTo(next);
+    }, AUTO_INTERVAL);
+  }, [last, goTo, stopAuto]);
 
   useEffect(() => {
     startAuto();
     return stopAuto;
   }, [startAuto, stopAuto]);
 
-  /* ━━━ Touch handlers (native, passive:false for move) ━━━ */
+  /* ━━━ Direct DOM transform (60fps, no React render) ━━━ */
+  const setTrackPosition = useCallback((pxOffset: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const basePx = indexRef.current * widthRef.current;
+    track.style.transition = "none"; // no animation while dragging
+    track.style.transform = `translateX(${-(basePx - pxOffset)}px)`;
+  }, []);
+
+  /* ━━━ Edge resistance (rubber-band) ━━━ */
+  const applyResistance = useCallback(
+    (dx: number): number => {
+      const idx = indexRef.current;
+      // At first slide dragging right, or last slide dragging left
+      if ((idx === 0 && dx > 0) || (idx === last && dx < 0)) {
+        return dx * EDGE_RESISTANCE; // dampen
+      }
+      return dx;
+    },
+    [last],
+  );
+
+  /* ━━━ Touch handlers (registered once, never re-registered) ━━━ */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
 
-    const onTouchStart = (e: TouchEvent) => {
+    const onStart = (e: TouchEvent) => {
       const t = e.touches[0];
-      touchStartX.current = t.clientX;
-      touchStartY.current = t.clientY;
-      swiping.current = false;
-      setSwipeDelta(0);
+      const ts = touchRef.current;
+      ts.startX = t.clientX;
+      ts.startY = t.clientY;
+      ts.deltaX = 0;
+      ts.startTime = Date.now();
+      ts.direction = null;
+      ts.active = false;
+      ts.width = widthRef.current;
       stopAuto();
     };
 
-    const onTouchMove = (e: TouchEvent) => {
+    const onMove = (e: TouchEvent) => {
       const t = e.touches[0];
-      const dx = t.clientX - touchStartX.current;
-      const dy = t.clientY - touchStartY.current;
+      const ts = touchRef.current;
+      const dx = t.clientX - ts.startX;
+      const dy = t.clientY - ts.startY;
 
-      // First significant movement — lock direction
-      if (!swiping.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-        if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll → ignore
-        swiping.current = true;
-        setIsSwiping(true);
+      /* Direction lock — decided once, persists for entire gesture */
+      if (
+        ts.direction === null &&
+        (Math.abs(dx) > LOCK_DELTA || Math.abs(dy) > LOCK_DELTA)
+      ) {
+        ts.direction = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
       }
 
-      if (!swiping.current) return;
+      /* Vertical scroll → ignore entirely */
+      if (ts.direction === "v") return;
 
-      e.preventDefault(); // block vertical scroll during horizontal swipe
-      setSwipeDelta(dx);
+      /* Not locked yet → wait */
+      if (ts.direction !== "h") return;
+
+      /* Horizontal swipe confirmed */
+      e.preventDefault();
+      ts.active = true;
+      ts.deltaX = applyResistance(dx);
+      setTrackPosition(ts.deltaX);
     };
 
-    const onTouchEnd = () => {
-      if (swiping.current) {
-        const delta = swipeDelta;
-        if (Math.abs(delta) >= SWIPE_THRESHOLD) {
-          // ±1 slide only
-          if (delta < 0) goTo(currentIndex + 1); // swipe left → next
-          else goTo(currentIndex - 1);            // swipe right → prev
+    const onEnd = () => {
+      const ts = touchRef.current;
+
+      if (ts.active) {
+        const elapsed = Math.max(Date.now() - ts.startTime, 1);
+        const velocity = Math.abs(ts.deltaX) / elapsed; // px/ms
+        const idx = indexRef.current;
+
+        let target = idx;
+
+        /* Velocity-based: fast flick triggers even for small distance */
+        if (velocity > VELOCITY_TRIGGER && Math.abs(ts.deltaX) > 10) {
+          target = ts.deltaX < 0 ? idx + 1 : idx - 1;
+        } else if (Math.abs(ts.deltaX) >= SWIPE_THRESHOLD) {
+          /* Distance-based: slow drag past threshold */
+          target = ts.deltaX < 0 ? idx + 1 : idx - 1;
         }
+        /* Otherwise: snap back to current */
+
+        goTo(target); // goTo clamps 0…last
       }
-      swiping.current = false;
-      setIsSwiping(false);
-      setSwipeDelta(0);
+
+      /* Reset touch state */
+      touchRef.current = { ...initialTouch };
       startAuto();
     };
 
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    const onCancel = () => {
+      if (touchRef.current.active) goTo(indexRef.current);
+      touchRef.current = { ...initialTouch };
+      startAuto();
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    el.addEventListener("touchcancel", onCancel, { passive: true });
 
     return () => {
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+      el.removeEventListener("touchcancel", onCancel);
     };
-  }, [currentIndex, goTo, startAuto, stopAuto, swipeDelta]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ← registered ONCE — all state accessed via refs
 
-  /* ━━━ Transform calculation ━━━ */
-  const containerW = trackRef.current?.parentElement?.offsetWidth || 1;
-  const dragPct = isSwiping ? (swipeDelta / containerW) * 100 : 0;
-  const translateX = currentIndex * -100 + dragPct;
+  /* ━━━ Sync track position when currentIndex changes (arrows/dots/auto) ━━━ */
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.style.transition = `transform ${SNAP_DURATION} cubic-bezier(.25,.46,.45,.94)`;
+    track.style.transform = `translateX(${currentIndex * -100}%)`;
+  }, [currentIndex]);
+
+  /* ━━━ Arrow / dot handlers ━━━ */
+  const onPrev = useCallback(() => {
+    stopAuto();
+    goTo(indexRef.current - 1);
+    startAuto();
+  }, [goTo, stopAuto, startAuto]);
+  const onNext = useCallback(() => {
+    stopAuto();
+    goTo(indexRef.current + 1);
+    startAuto();
+  }, [goTo, stopAuto, startAuto]);
+  const onDot = useCallback(
+    (i: number) => {
+      stopAuto();
+      goTo(i);
+      startAuto();
+    },
+    [goTo, stopAuto, startAuto],
+  );
 
   return (
     <section
@@ -129,16 +266,8 @@ export default function Hero() {
           {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
-
-              {/* ── Slide track ── */}
-              <div
-                ref={trackRef}
-                className="hero-track"
-                style={{
-                  transform: `translateX(${translateX}%)`,
-                  transition: isSwiping ? "none" : "transform 0.3s ease",
-                }}
-              >
+              {/* ── Slide track (transform driven by refs, not state) ── */}
+              <div ref={trackRef} className="hero-track">
                 {slides.map((slide, i) => (
                   <div key={i} className="hero-slide">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -167,22 +296,20 @@ export default function Hero() {
                 <div className="hero-caption-tag">
                   {slides[currentIndex]?.caption}
                 </div>
-                <p className="hero-caption-sub">
-                  {slides[currentIndex]?.sub}
-                </p>
+                <p className="hero-caption-sub">{slides[currentIndex]?.sub}</p>
                 <div className="hero-caption-line" />
               </div>
 
               {/* ── Nav arrows (desktop) ── */}
               <button
-                onClick={() => { goTo(currentIndex - 1); stopAuto(); startAuto(); }}
+                onClick={onPrev}
                 className="hero-arrow hero-arrow-left"
                 aria-label="الصورة السابقة"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                onClick={() => { goTo(currentIndex + 1); stopAuto(); startAuto(); }}
+                onClick={onNext}
                 className="hero-arrow hero-arrow-right"
                 aria-label="الصورة التالية"
               >
@@ -194,7 +321,7 @@ export default function Hero() {
                 {slides.map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => { goTo(i); stopAuto(); startAuto(); }}
+                    onClick={() => onDot(i)}
                     className={`hero-dot ${i === currentIndex ? "active" : ""}`}
                     aria-label={`صورة ${i + 1}`}
                   />

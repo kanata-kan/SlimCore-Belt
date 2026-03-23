@@ -150,11 +150,13 @@
     0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Slide track (unified translateX) ── */
+/* ── Slide track (transform driven by JS refs for 60fps) ── */
 .hero-track {
   display: flex;
   will-change: transform;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .hero-slide {
   flex: 0 0 100%;
