@@ -100,14 +100,20 @@ export default function Hero() {
                       loading={i === 0 ? "eager" : "lazy"}
                       draggable={false}
                     />
-                    {/* Caption overlay */}
+                    {/* Canva-style brand badge — top left */}
+                    <div className="hero-brand-badge">
+                      <span className="hero-brand-dot" />
+                      {siteConfig.productName}
+                    </div>
+                    {/* Feature tag — top right */}
+                    <div className="hero-feature-tag">{slide.caption}</div>
+                    {/* Bottom caption — left aligned */}
                     <div className="hero-caption">
-                      <span className="font-head text-sm md:text-base font-bold">
+                      <span className="hero-caption-title font-head">
                         {slide.caption}
                       </span>
-                      <span className="text-white/70 text-xs md:text-sm">
-                        {slide.sub}
-                      </span>
+                      <span className="hero-caption-sub">{slide.sub}</span>
+                      <div className="hero-caption-line" />
                     </div>
                   </div>
                 ))}

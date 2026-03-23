@@ -153,6 +153,7 @@
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -168,20 +169,83 @@
   background: linear-gradient(135deg, #e8effe 0%, #dbeafe 100%);
 }
 
+/* ── Canva-style overlays ── */
+.hero-brand-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.hero-brand-badge .hero-brand-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00b5a3;
+}
+
+.hero-feature-tag {
+  position: absolute;
+  top: 14px;
+  right: 50px;
+  z-index: 5;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #1554e8, #00b5a3);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
 .hero-caption {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 5;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 28px 16px 20px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+  align-items: flex-start;
+  gap: 4px;
+  padding: 40px 18px 44px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.15) 60%,
+    transparent 100%
+  );
   color: white;
-  text-align: center;
   pointer-events: none;
+}
+.hero-caption-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+.hero-caption-sub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.hero-caption-line {
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1554e8, #00b5a3);
+  margin-top: 4px;
 }
 
 .hero-arrow {
@@ -425,6 +489,44 @@
 /* ─────────────────────────────────────────
    Section number badges (decorative)
 ───────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   Scroll to top button
+───────────────────────────────────────── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 90px;
+  left: 20px;
+  z-index: 40;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  color: #1554e8;
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    background 0.2s;
+}
+.scroll-top-btn.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.scroll-top-btn:hover {
+  background: white;
+  box-shadow: 0 4px 20px rgba(21, 84, 232, 0.18);
+}
+
 .section-badge {
   display: inline-flex;
   align-items: center;

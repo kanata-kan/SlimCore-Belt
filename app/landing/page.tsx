@@ -13,6 +13,7 @@ import OrderForm from "@/components/sections/OrderSection";
 import Trust from "@/components/sections/Guarantees";
 import CTA from "@/components/sections/CTA";
 import StickyCTA from "@/components/ui/StickyCTA";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 
 export const metadata: Metadata = landingMetadata;
@@ -94,6 +95,9 @@ export default function LandingPage() {
 
       {/* Sticky CTA (mobile only) */}
       <StickyCTA />
+
+      {/* Scroll to top */}
+      <ScrollToTop />
     </>
   );
 }
