@@ -17,11 +17,11 @@ export default function Hero() {
   const total = slides.length;
   const [current, setCurrent] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
+  const dragOffset = useRef(0);
   const startX = useRef(0);
   const startY = useRef(0);
   const dirLocked = useRef<"h" | "v" | null>(null);
-  const containerW = useRef(0);
+  const trackRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const goTo = useCallback(
@@ -42,48 +42,63 @@ export default function Hero() {
     };
   }, [resetAuto]);
 
-  // Touch handlers — direction lock: horizontal = slider, vertical = page scroll
-  const onTouchStart = (e: React.TouchEvent) => {
-    const t = e.touches[0];
-    startX.current = t.clientX;
-    startY.current = t.clientY;
-    dirLocked.current = null;
-    setDragOffset(0);
-    containerW.current = (e.currentTarget as HTMLElement).offsetWidth || 1;
-    if (autoRef.current) clearInterval(autoRef.current);
-  };
+  // Native touch listeners with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
 
-  const onTouchMove = (e: React.TouchEvent) => {
-    const t = e.touches[0];
-    const dx = t.clientX - startX.current;
-    const dy = t.clientY - startY.current;
+    let cw = 1;
 
-    if (!dirLocked.current && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-      dirLocked.current = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
-    }
-    if (dirLocked.current !== "h") return;
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      startX.current = t.clientX;
+      startY.current = t.clientY;
+      dirLocked.current = null;
+      dragOffset.current = 0;
+      cw = el.offsetWidth || 1;
+      if (autoRef.current) clearInterval(autoRef.current);
+    };
 
-    e.preventDefault();
-    if (!dragging) setDragging(true);
-    setDragOffset(dx);
-  };
+    const onMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      const dx = t.clientX - startX.current;
+      const dy = t.clientY - startY.current;
 
-  const onTouchEnd = () => {
-    if (dragging) {
-      const threshold = containerW.current * 0.2;
-      if (Math.abs(dragOffset) > threshold) {
-        goTo(dragOffset > 0 ? current - 1 : current + 1);
+      if (!dirLocked.current && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+        dirLocked.current = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
       }
-    }
-    setDragging(false);
-    setDragOffset(0);
-    dirLocked.current = null;
-    resetAuto();
-  };
+      if (dirLocked.current !== "h") return;
 
-  // CSS transform offset
-  const pct =
-    current * -100 + (dragging ? (dragOffset / containerW.current) * 100 : 0);
+      e.preventDefault();
+      dragOffset.current = dx;
+      setDragging(true);
+      el.style.transform = `translateX(calc(${current * -100}% + ${dx}px))`;
+    };
+
+    const onEnd = () => {
+      if (dirLocked.current === "h") {
+        const threshold = cw * 0.2;
+        if (Math.abs(dragOffset.current) > threshold) {
+          goTo(dragOffset.current > 0 ? current - 1 : current + 1);
+        }
+      }
+      dragOffset.current = 0;
+      dirLocked.current = null;
+      setDragging(false);
+      el.style.transform = "";
+      resetAuto();
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [current, goTo, resetAuto]);
 
   return (
     <section
@@ -96,29 +111,32 @@ export default function Hero() {
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
               <div
+                ref={trackRef}
                 className={`hero-track ${dragging ? "dragging" : ""}`}
-                style={{ transform: `translateX(${pct}%)` }}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
+                style={
+                  !dragging
+                    ? { transform: `translateX(${current * -100}%)` }
+                    : undefined
+                }
               >
                 {slides.map((slide, i) => (
                   <div key={i} className="hero-slide">
                     <Image
                       src={slide.image}
                       alt={slide.alt}
-                      fill
-                      className="object-cover"
+                      width={640}
+                      height={960}
+                      className="hero-slide-img"
                       sizes="(max-width: 768px) 92vw, 420px"
                       quality={85}
-                      loading={i === 0 ? "eager" : "lazy"}
+                      priority={i === 0}
                       draggable={false}
                     />
                   </div>
                 ))}
               </div>
 
-              {/* ── Canva-style overlay (outside track, always visible) ── */}
+              {/* ── Overlays (outside track, always visible) ── */}
               <div className="hero-overlay-top">
                 <div className="hero-brand-badge">
                   <span className="hero-brand-dot" />

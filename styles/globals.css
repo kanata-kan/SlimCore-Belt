@@ -163,8 +163,15 @@
 .hero-slide {
   position: relative;
   flex: 0 0 100%;
-  aspect-ratio: 2 / 3;
+  overflow: hidden;
   background: linear-gradient(135deg, #e8effe 0%, #dbeafe 100%);
+}
+.hero-slide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ── Overlay: top bar (brand + counter) ── */
