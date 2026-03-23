@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { siteConfig, PRICING_LIST } from "@/config/site";
 import {
   ShoppingCart,
@@ -11,57 +11,113 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+/* ─── Swipe threshold (px) ─── */
+const SWIPE_THRESHOLD = 50;
+
 export default function Hero() {
   const slides = siteConfig.heroSlides;
   const total = slides.length;
-  const [current, setCurrent] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+
+  /* ━━━ Single source of truth ━━━ */
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDelta, setSwipeDelta] = useState(0);
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const swiping = useRef(false);
+  const trackRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
+  /* ━━━ Navigation (clamped, never wraps) ━━━ */
   const goTo = useCallback(
-    (idx: number) => setCurrent(((idx % total) + total) % total),
+    (idx: number) => {
+      const clamped = Math.max(0, Math.min(idx, total - 1));
+      setCurrentIndex(clamped);
+    },
     [total],
   );
 
-  // Detect mobile (< 768px)
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check, { passive: true });
-    return () => window.removeEventListener("resize", check);
+  /* ━━━ Auto-advance (desktop: ≥768px) ━━━ */
+  const startAuto = useCallback(() => {
+    if (autoRef.current) clearInterval(autoRef.current);
+    if (window.innerWidth < 768) return;
+    autoRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev < total - 1 ? prev + 1 : 0));
+    }, 4000);
+  }, [total]);
+
+  const stopAuto = useCallback(() => {
+    if (autoRef.current) { clearInterval(autoRef.current); autoRef.current = undefined; }
   }, []);
 
-  // Auto-advance only on desktop
   useEffect(() => {
-    if (isMobile) return;
-    if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => goTo(current + 1), 4000);
-    return () => {
-      if (autoRef.current) clearInterval(autoRef.current);
-    };
-  }, [current, goTo, isMobile]);
+    startAuto();
+    return stopAuto;
+  }, [startAuto, stopAuto]);
 
-  // Mobile: sync dots from native scroll position
+  /* ━━━ Touch handlers (native, passive:false for move) ━━━ */
   useEffect(() => {
-    if (!isMobile) return;
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
-    const onScroll = () => {
-      const w = el.offsetWidth;
-      if (w === 0) return;
-      const idx = Math.round(el.scrollLeft / w);
-      if (idx >= 0 && idx < total) setCurrent(idx);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [isMobile, total]);
 
-  const resetAuto = useCallback(() => {
-    if (isMobile) return;
-    if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => goTo(current + 1), 4000);
-  }, [current, goTo, isMobile]);
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      touchStartX.current = t.clientX;
+      touchStartY.current = t.clientY;
+      swiping.current = false;
+      setSwipeDelta(0);
+      stopAuto();
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX.current;
+      const dy = t.clientY - touchStartY.current;
+
+      // First significant movement — lock direction
+      if (!swiping.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll → ignore
+        swiping.current = true;
+        setIsSwiping(true);
+      }
+
+      if (!swiping.current) return;
+
+      e.preventDefault(); // block vertical scroll during horizontal swipe
+      setSwipeDelta(dx);
+    };
+
+    const onTouchEnd = () => {
+      if (swiping.current) {
+        const delta = swipeDelta;
+        if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+          // ±1 slide only
+          if (delta < 0) goTo(currentIndex + 1); // swipe left → next
+          else goTo(currentIndex - 1);            // swipe right → prev
+        }
+      }
+      swiping.current = false;
+      setIsSwiping(false);
+      setSwipeDelta(0);
+      startAuto();
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [currentIndex, goTo, startAuto, stopAuto, swipeDelta]);
+
+  /* ━━━ Transform calculation ━━━ */
+  const containerW = trackRef.current?.parentElement?.offsetWidth || 1;
+  const dragPct = isSwiping ? (swipeDelta / containerW) * 100 : 0;
+  const translateX = currentIndex * -100 + dragPct;
 
   return (
     <section
@@ -73,85 +129,73 @@ export default function Hero() {
           {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
-              {/* ── MOBILE: scroll-snap (native swipe) ── */}
-              <div ref={scrollRef} className="hero-scroll-mobile">
+
+              {/* ── Slide track ── */}
+              <div
+                ref={trackRef}
+                className="hero-track"
+                style={{
+                  transform: `translateX(${translateX}%)`,
+                  transition: isSwiping ? "none" : "transform 0.3s ease",
+                }}
+              >
                 {slides.map((slide, i) => (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    key={`m-${i}`}
-                    src={slide.image}
-                    alt={slide.alt}
-                    className="hero-scroll-img"
-                    draggable={false}
-                  />
+                  <div key={i} className="hero-slide">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={slide.image}
+                      alt={slide.alt}
+                      className="hero-slide-img"
+                      draggable={false}
+                    />
+                  </div>
                 ))}
               </div>
 
-              {/* ── DESKTOP: fade (auto-advance) ── */}
-              <div className="hero-fade-desktop">
-                {slides.map((slide, i) => (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    key={`d-${i}`}
-                    src={slide.image}
-                    alt={slide.alt}
-                    className={`hero-fade-img ${i === current ? "active" : ""}`}
-                    draggable={false}
-                  />
-                ))}
-              </div>
-
-              {/* ── Overlays ── */}
+              {/* ── Overlays (driven by currentIndex) ── */}
               <div className="hero-overlay-top">
                 <div className="hero-brand-badge">
                   <span className="hero-brand-dot" />
                   {siteConfig.productName}
                 </div>
                 <div className="hero-counter">
-                  {current + 1} / {total}
+                  {currentIndex + 1} / {total}
                 </div>
               </div>
 
               <div className="hero-overlay-bottom">
                 <div className="hero-caption-tag">
-                  {slides[current]?.caption}
+                  {slides[currentIndex]?.caption}
                 </div>
-                <p className="hero-caption-sub">{slides[current]?.sub}</p>
+                <p className="hero-caption-sub">
+                  {slides[currentIndex]?.sub}
+                </p>
                 <div className="hero-caption-line" />
               </div>
 
-              {/* Nav arrows (desktop only via CSS) */}
+              {/* ── Nav arrows (desktop) ── */}
               <button
-                onClick={() => {
-                  goTo(current - 1);
-                  resetAuto();
-                }}
+                onClick={() => { goTo(currentIndex - 1); stopAuto(); startAuto(); }}
                 className="hero-arrow hero-arrow-left"
                 aria-label="الصورة السابقة"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                onClick={() => {
-                  goTo(current + 1);
-                  resetAuto();
-                }}
+                onClick={() => { goTo(currentIndex + 1); stopAuto(); startAuto(); }}
                 className="hero-arrow hero-arrow-right"
                 aria-label="الصورة التالية"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
 
-              {/* Dots */}
+              {/* ── Dots (synced to currentIndex) ── */}
               <div className="hero-dots">
                 {slides.map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => {
-                      goTo(i);
-                      resetAuto();
-                    }}
-                    className={`hero-dot ${i === current ? "active" : ""}`}
+                    onClick={() => { goTo(i); stopAuto(); startAuto(); }}
+                    className={`hero-dot ${i === currentIndex ? "active" : ""}`}
                     aria-label={`صورة ${i + 1}`}
                   />
                 ))}
