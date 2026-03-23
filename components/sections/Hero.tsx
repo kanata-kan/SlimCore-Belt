@@ -130,6 +130,7 @@ export default function Hero() {
                       sizes="(max-width: 768px) 92vw, 420px"
                       quality={85}
                       priority={i === 0}
+                      loading={i === 0 ? undefined : "eager"}
                       draggable={false}
                     />
                   </div>
