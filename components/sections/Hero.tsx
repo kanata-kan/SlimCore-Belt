@@ -16,29 +16,23 @@ export default function Hero() {
   const slides = siteConfig.heroSlides;
   const total = slides.length;
   const [current, setCurrent] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const dirLocked = useRef<"h" | "v" | null>(null);
+  const containerW = useRef(0);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const isUserScrolling = useRef(false);
 
-  // Scroll to a specific slide
   const goTo = useCallback(
-    (idx: number) => {
-      const wrapped = ((idx % total) + total) % total;
-      setCurrent(wrapped);
-      const el = scrollRef.current;
-      if (!el) return;
-      const slideW = el.offsetWidth;
-      el.scrollTo({ left: slideW * wrapped, behavior: "smooth" });
-    },
+    (idx: number) => setCurrent(((idx % total) + total) % total),
     [total],
   );
 
-  // Auto-advance every 5s
+  // Auto-advance
   const resetAuto = useCallback(() => {
     if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => {
-      if (!isUserScrolling.current) goTo(current + 1);
-    }, 5000);
+    autoRef.current = setInterval(() => goTo(current + 1), 5000);
   }, [current, goTo]);
 
   useEffect(() => {
@@ -48,27 +42,48 @@ export default function Hero() {
     };
   }, [resetAuto]);
 
-  // Detect which slide is visible via native scroll
-  const onScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const slideW = el.offsetWidth;
-    if (slideW === 0) return;
-    const idx = Math.round(el.scrollLeft / slideW);
-    if (idx !== current && idx >= 0 && idx < total) {
-      setCurrent(idx);
-    }
-  }, [current, total]);
-
-  // Pause auto-advance while user is touching
-  const onTouchStart = () => {
-    isUserScrolling.current = true;
+  // Touch handlers — direction lock: horizontal = slider, vertical = page scroll
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    startX.current = t.clientX;
+    startY.current = t.clientY;
+    dirLocked.current = null;
+    setDragOffset(0);
+    containerW.current = (e.currentTarget as HTMLElement).offsetWidth || 1;
     if (autoRef.current) clearInterval(autoRef.current);
   };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    const dx = t.clientX - startX.current;
+    const dy = t.clientY - startY.current;
+
+    if (!dirLocked.current && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      dirLocked.current = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
+    }
+    if (dirLocked.current !== "h") return;
+
+    e.preventDefault();
+    if (!dragging) setDragging(true);
+    setDragOffset(dx);
+  };
+
   const onTouchEnd = () => {
-    isUserScrolling.current = false;
+    if (dragging) {
+      const threshold = containerW.current * 0.2;
+      if (Math.abs(dragOffset) > threshold) {
+        goTo(dragOffset > 0 ? current - 1 : current + 1);
+      }
+    }
+    setDragging(false);
+    setDragOffset(0);
+    dirLocked.current = null;
     resetAuto();
   };
+
+  // CSS transform offset
+  const pct =
+    current * -100 + (dragging ? (dragOffset / containerW.current) * 100 : 0);
 
   return (
     <section
@@ -80,12 +95,11 @@ export default function Hero() {
           {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
-              {/* Scroll-snap container — native touch, zero JS conflicts */}
               <div
-                ref={scrollRef}
-                className="hero-scroll"
-                onScroll={onScroll}
+                className={`hero-track ${dragging ? "dragging" : ""}`}
+                style={{ transform: `translateX(${pct}%)` }}
                 onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
                 {slides.map((slide, i) => (
@@ -100,23 +114,27 @@ export default function Hero() {
                       loading={i === 0 ? "eager" : "lazy"}
                       draggable={false}
                     />
-                    {/* Canva-style brand badge — top left */}
-                    <div className="hero-brand-badge">
-                      <span className="hero-brand-dot" />
-                      {siteConfig.productName}
-                    </div>
-                    {/* Feature tag — top right */}
-                    <div className="hero-feature-tag">{slide.caption}</div>
-                    {/* Bottom caption — left aligned */}
-                    <div className="hero-caption">
-                      <span className="hero-caption-title font-head">
-                        {slide.caption}
-                      </span>
-                      <span className="hero-caption-sub">{slide.sub}</span>
-                      <div className="hero-caption-line" />
-                    </div>
                   </div>
                 ))}
+              </div>
+
+              {/* ── Canva-style overlay (outside track, always visible) ── */}
+              <div className="hero-overlay-top">
+                <div className="hero-brand-badge">
+                  <span className="hero-brand-dot" />
+                  {siteConfig.productName}
+                </div>
+                <div className="hero-counter">
+                  {current + 1} / {total}
+                </div>
+              </div>
+
+              <div className="hero-overlay-bottom">
+                <div className="hero-caption-tag">
+                  {slides[current]?.caption}
+                </div>
+                <p className="hero-caption-sub">{slides[current]?.sub}</p>
+                <div className="hero-caption-line" />
               </div>
 
               {/* Nav arrows (desktop) */}
@@ -154,11 +172,6 @@ export default function Hero() {
                     aria-label={`صورة ${i + 1}`}
                   />
                 ))}
-              </div>
-
-              {/* Counter badge */}
-              <div className="hero-counter">
-                {current + 1} / {total}
               </div>
             </div>
           </div>
