@@ -153,6 +153,7 @@
 /* ── Slide track (transform driven by JS refs for 60fps) ── */
 .hero-track {
   display: flex;
+  direction: ltr; /* Force LTR so translateX(-N*100%) always works correctly */
   will-change: transform;
   touch-action: pan-y pinch-zoom;
   -webkit-user-select: none;
