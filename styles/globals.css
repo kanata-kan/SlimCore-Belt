@@ -150,7 +150,29 @@
     0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.hero-fade-container {
+/* ── Mobile: scroll-snap (native swipe) ── */
+.hero-scroll-mobile {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.hero-scroll-mobile::-webkit-scrollbar {
+  display: none;
+}
+.hero-scroll-img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: auto;
+  scroll-snap-align: start;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Desktop: fade (auto-advance) ── */
+.hero-fade-desktop {
+  display: none;
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
@@ -169,6 +191,16 @@
 }
 .hero-fade-img.active {
   opacity: 1;
+}
+
+/* Switch: mobile shows scroll, desktop shows fade */
+@media (min-width: 768px) {
+  .hero-scroll-mobile {
+    display: none;
+  }
+  .hero-fade-desktop {
+    display: block;
+  }
 }
 
 /* ── Overlay: top bar (brand + counter) ── */

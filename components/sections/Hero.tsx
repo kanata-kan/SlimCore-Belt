@@ -15,6 +15,8 @@ export default function Hero() {
   const slides = siteConfig.heroSlides;
   const total = slides.length;
   const [current, setCurrent] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const goTo = useCallback(
@@ -22,18 +24,44 @@ export default function Hero() {
     [total],
   );
 
-  // Auto-advance every 4s
-  const resetAuto = useCallback(() => {
+  // Detect mobile (< 768px)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check, { passive: true });
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Auto-advance only on desktop
+  useEffect(() => {
+    if (isMobile) return;
     if (autoRef.current) clearInterval(autoRef.current);
     autoRef.current = setInterval(() => goTo(current + 1), 4000);
-  }, [current, goTo]);
-
-  useEffect(() => {
-    resetAuto();
     return () => {
       if (autoRef.current) clearInterval(autoRef.current);
     };
-  }, [resetAuto]);
+  }, [current, goTo, isMobile]);
+
+  // Mobile: sync dots from native scroll position
+  useEffect(() => {
+    if (!isMobile) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const w = el.offsetWidth;
+      if (w === 0) return;
+      const idx = Math.round(el.scrollLeft / w);
+      if (idx >= 0 && idx < total) setCurrent(idx);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [isMobile, total]);
+
+  const resetAuto = useCallback(() => {
+    if (isMobile) return;
+    if (autoRef.current) clearInterval(autoRef.current);
+    autoRef.current = setInterval(() => goTo(current + 1), 4000);
+  }, [current, goTo, isMobile]);
 
   return (
     <section
@@ -45,12 +73,26 @@ export default function Hero() {
           {/* ── Gallery ── */}
           <div className="w-full lg:w-[55%] mb-8 lg:mb-0">
             <div className="hero-gallery mx-auto">
-              {/* Fade slider — one image at a time, no translateX */}
-              <div className="hero-fade-container">
+              {/* ── MOBILE: scroll-snap (native swipe) ── */}
+              <div ref={scrollRef} className="hero-scroll-mobile">
                 {slides.map((slide, i) => (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    key={i}
+                    key={`m-${i}`}
+                    src={slide.image}
+                    alt={slide.alt}
+                    className="hero-scroll-img"
+                    draggable={false}
+                  />
+                ))}
+              </div>
+
+              {/* ── DESKTOP: fade (auto-advance) ── */}
+              <div className="hero-fade-desktop">
+                {slides.map((slide, i) => (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={`d-${i}`}
                     src={slide.image}
                     alt={slide.alt}
                     className={`hero-fade-img ${i === current ? "active" : ""}`}
@@ -78,7 +120,7 @@ export default function Hero() {
                 <div className="hero-caption-line" />
               </div>
 
-              {/* Nav arrows */}
+              {/* Nav arrows (desktop only via CSS) */}
               <button
                 onClick={() => {
                   goTo(current - 1);
