@@ -32,7 +32,12 @@ export default function StickyCTA() {
                  shadow-[0_-4px_24px_rgba(0,0,0,.08)]
                  transition-transform duration-300 ease-out
                  lg:hidden"
-      style={{ transform: hidden ? "translateY(100%)" : "translateY(0)" }}
+      style={{
+        transform: hidden ? "translateY(100%)" : "translateY(0)",
+        maxWidth: "100vw",
+        overflow: "hidden",
+        padding: "max(12px, 3vw)",
+      }}
       aria-hidden={hidden}
     >
       <div className="flex flex-col leading-tight">
@@ -45,16 +50,16 @@ export default function StickyCTA() {
         onClick={handleClick}
         className="flex-1 flex items-center justify-center gap-2
                    text-white font-head text-[15px] font-extrabold
-                   py-3.5 rounded-2xl
+                   py-3.5 px-4 rounded-2xl
                    shadow-cta transition-all duration-300 ease-out
-                   active:scale-[0.98]"
+                   active:scale-[0.98] min-w-0"
         style={{
           background: "linear-gradient(135deg, #1554e8, #0C3DC4, #00B5A3)",
         }}
         aria-label="اطلب الآن — الدفع عند الاستلام"
       >
-        <ShoppingCart className="w-4.5 h-4.5" />
-        اطلب الآن
+        <ShoppingCart className="w-4.5 h-4.5 flex-shrink-0" />
+        <span className="truncate">اطلب الآن</span>
       </button>
     </div>
   );
