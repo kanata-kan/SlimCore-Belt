@@ -2,7 +2,7 @@
 
 > Next.js 14 · App Router · TypeScript · Tailwind CSS
 
-## 🚀 البدء السريع
+## 🚀 البد السريع
 
 ```bash
 # 1. تثبيت الحزم
@@ -83,6 +83,7 @@ waist-belt-nextjs/
 ## 📊 Analytics
 
 في `.env.local`:
+
 ```
 NEXT_PUBLIC_GA_MEASUREMENT=G-XXXXXXXXXX
 NEXT_PUBLIC_FB_PIXEL_ID=XXXXXXXXXXXXXXX
@@ -92,10 +93,12 @@ NEXT_PUBLIC_TIKTOK_PIXEL_ID=XXXXXXXXXXXXXXX
 ## 🛒 ربط الطلبات
 
 في `app/api/order/route.ts`:
+
 - يمكن ربطه بـ Zapier / Make / n8n عبر `WEBHOOK_URL`
 - أو إضافة CRM مباشرة في الكود
 
 ## ⚡ أداء متوقع
+
 - Lighthouse Score: 95+
 - First Contentful Paint: < 0.8s
 - Time to Interactive: < 1.2s
