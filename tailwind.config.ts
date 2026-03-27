@@ -45,6 +45,7 @@ const config: Config = {
         "slide-up": "slideUp 0.5s ease-out",
         "fade-in": "fadeIn 0.4s ease-out",
         "pulse-soft": "pulseSoft 2s ease-in-out infinite",
+        "trust-marquee": "trustMarquee 18s linear infinite", // ← زيد هاد السطر
       },
       keyframes: {
         slideUp: {
@@ -58,6 +59,11 @@ const config: Config = {
         pulseSoft: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
+        },
+        // ← زيد هاد الـ keyframe
+        trustMarquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

@@ -36,12 +36,7 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Preload critical fonts */}
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap"
-          as="style"
-        />
+        {/* Load fonts normally without preload to avoid unused preload warning */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@500;700;800;900&display=swap"
@@ -49,7 +44,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#1554E8" />
         <meta name="color-scheme" content="light" />
-        {/* Preload critical images */}
+        {/* Preload critical images only */}
         <link rel="preload" href="/images/before.webp" as="image" />
         <link rel="preload" href="/images/after.webp" as="image" />
       </head>
