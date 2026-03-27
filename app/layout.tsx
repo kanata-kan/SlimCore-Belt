@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.productName}`,
   },
   description: `أخفِ بطنك فوراً مع ${siteConfig.productNameAr} — توصيل مجاني لجميع مدن المغرب، ${siteConfig.payment}.`,
+  // Performance optimizations
+  robots: "index, follow",
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 export default function RootLayout({
@@ -31,6 +36,12 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* Preload critical fonts */}
+        <link
+          rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap"
+          as="style"
+        />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@500;700;800;900&display=swap"
@@ -38,6 +49,9 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#1554E8" />
         <meta name="color-scheme" content="light" />
+        {/* Preload critical images */}
+        <link rel="preload" href="/images/before.webp" as="image" />
+        <link rel="preload" href="/images/after.webp" as="image" />
       </head>
 
       <body>

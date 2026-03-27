@@ -29,6 +29,8 @@ export default function HeroSlider({
             <img
               src={slide.image}
               alt={slide.alt}
+              width={420}
+              height={560}
               className="hero-slide-img"
               draggable={false}
             />
@@ -48,9 +50,7 @@ export default function HeroSlider({
       </div>
 
       <div className="hero-overlay-bottom">
-        <div className="hero-caption-tag">
-          {slides[currentIndex]?.caption}
-        </div>
+        <div className="hero-caption-tag">{slides[currentIndex]?.caption}</div>
         <p className="hero-caption-sub">{slides[currentIndex]?.sub}</p>
         <div className="hero-caption-line" />
       </div>

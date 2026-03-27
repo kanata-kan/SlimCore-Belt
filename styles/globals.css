@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─────────────────────────────────────────
-   Base
-───────────────────────────────────────── */
+/* Critical CSS - Above the fold optimizations */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -20,6 +18,8 @@
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Prevent layout shifts */
+    min-height: 100vh;
   }
 
   /* Safe area insets for notched screens */
@@ -28,6 +28,11 @@
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
     }
+  }
+
+  /* Optimize font loading */
+  * {
+    font-display: swap;
   }
 
   ::selection {

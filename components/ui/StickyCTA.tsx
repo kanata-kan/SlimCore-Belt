@@ -1,27 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { siteConfig, PRICING_LIST } from "@/config/site";
 import { ShoppingCart } from "lucide-react";
 
 export default function StickyCTA() {
   const [hidden, setHidden] = useState(false);
 
-  useEffect(() => {
+  const handleScroll = useCallback(() => {
     const order = document.getElementById("order");
     if (!order) return;
 
-    const io = new IntersectionObserver(
-      ([entry]) => setHidden(entry.isIntersecting),
-      { threshold: 0.2 },
-    );
-    io.observe(order);
-    return () => io.disconnect();
+    const rect = order.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+    setHidden(isVisible);
   }, []);
 
-  const handleClick = () => {
+  useEffect(() => {
+    // Use passive event listener for better performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [handleScroll]);
+
+  const handleClick = useCallback(() => {
     document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   return (
     <div
