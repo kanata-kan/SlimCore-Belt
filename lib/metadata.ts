@@ -3,7 +3,8 @@ import { siteConfig } from "@/config/site";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://your-domain.com";
 
-const title = `${siteConfig.productNameAr} — ${siteConfig.tagline} | توصيل مجاني والدفع عند الاستلام`;
+const tagline = `${siteConfig.headline.solution} — ${siteConfig.headline.ease}`;
+const title = `${siteConfig.productNameAr} — ${tagline} | توصيل مجاني والدفع عند الاستلام`;
 const description = `أخفِ بطنك فوراً مع ${siteConfig.productNameAr} — مظهر أنحف تحت الملابس، توصيل مجاني لجميع مدن المغرب، ${siteConfig.payment}.`;
 
 export const landingMetadata: Metadata = {
@@ -31,14 +32,14 @@ export const landingMetadata: Metadata = {
     locale: "ar_MA",
     url: `${SITE_URL}/landing`,
     siteName: siteConfig.productName,
-    title: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
+    title: `${siteConfig.productNameAr} — ${tagline}`,
     description,
     images: [
       {
         url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
+        alt: `${siteConfig.productNameAr} — ${tagline}`,
         type: "image/png",
       },
     ],
@@ -46,7 +47,7 @@ export const landingMetadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
+    title: `${siteConfig.productNameAr} — ${tagline}`,
     description,
     images: [`${SITE_URL}/og-image.png`],
   },

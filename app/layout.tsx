@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: `${siteConfig.productNameAr} — ${siteConfig.tagline}`,
+    default: `${siteConfig.productNameAr} — ${siteConfig.headline.solution}`,
     template: `%s | ${siteConfig.productName}`,
   },
   description: `أخفِ بطنك فوراً مع ${siteConfig.productNameAr} — توصيل مجاني لجميع مدن المغرب، ${siteConfig.payment}.`,
