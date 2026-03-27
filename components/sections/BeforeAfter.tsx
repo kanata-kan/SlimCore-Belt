@@ -390,6 +390,7 @@ export default function BeforeAfter() {
           position: "relative",
           overflow: "hidden",
         }}
+        className="before-after-section"
       >
         {/* Background decorative circles */}
         <div
@@ -481,39 +482,12 @@ export default function BeforeAfter() {
           </div>
 
           {/* Cards */}
-          <div
-            style={{
-              display: "flex",
-              gap: 20,
-              alignItems: "stretch",
-            }}
-          >
+          <div className="cards-container">
             <BeforeCard visible={visible} />
 
             {/* VS divider */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                gap: 8,
-                transform: visible ? "scale(1)" : "scale(0.5)",
-                opacity: visible ? 1 : 0,
-                transition:
-                  "transform 0.5s cubic-bezier(.34,1.56,.64,1), opacity 0.5s ease",
-                transitionDelay: "0.4s",
-              }}
-            >
-              <div
-                style={{
-                  width: 2,
-                  flex: 1,
-                  background:
-                    "linear-gradient(to bottom, transparent, #e5e7eb, transparent)",
-                }}
-              />
+            <div className={`vs-divider ${visible ? "visible" : ""}`}>
+              <div className="divider-line" />
               <div
                 style={{
                   width: 44,
@@ -533,14 +507,7 @@ export default function BeforeAfter() {
               >
                 VS
               </div>
-              <div
-                style={{
-                  width: 2,
-                  flex: 1,
-                  background:
-                    "linear-gradient(to bottom, transparent, #e5e7eb, transparent)",
-                }}
-              />
+              <div className="divider-line" />
             </div>
 
             <AfterCard visible={visible} />
