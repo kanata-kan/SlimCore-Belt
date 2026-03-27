@@ -6,7 +6,7 @@
 
 ```bash
 # 1. تثبيت الحزم
-npm install
+npm  install
 
 # 2. إعداد المتغيرات البيئية
 cp .env.local.example .env.local
