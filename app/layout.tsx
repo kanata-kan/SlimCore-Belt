@@ -88,6 +88,10 @@ export default function RootLayout({
           </Script>
         )}
       </body>
+      <Script
+        src="http://localhost:3000/api/review-links/6705f745815f467f97515b98968ff76106426f96e1934725b711fe9a058f749b/script"
+        strategy="afterInteractive"
+      />
     </html>
   );
 }
